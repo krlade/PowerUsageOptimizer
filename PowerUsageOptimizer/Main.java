@@ -93,11 +93,11 @@ public class Main {
         System.out.println("\n=== Taryfy G12 ===");
         System.out.println("Przedziały taryfowe:");
         for (Tariff tariff : Tariff.tarrifsList) {
-            System.out.println(String.format("%-8s | %s-%s | %.4f zł/kWh", 
-                             tariff.name, 
-                             tariff.startTime, 
-                             tariff.endTime, 
-                             tariff.price));
+            System.out.printf("%-8s | %s-%s | %.4f zł/kWh%n",
+                             tariff.name,
+                             tariff.startTime,
+                             tariff.endTime,
+                             tariff.price);
         }
         
         // Test cen w różnych godzinach
@@ -112,7 +112,7 @@ public class Main {
         
         for (LocalTime hour : testHours) {
             double price = Tariff.getPrice(hour);
-            System.out.println(String.format("Godzina %s: %.4f zł/kWh", hour, price));
+            System.out.printf("Godzina %s: %.4f zł/kWh%n", hour, price);
         }
     }
     
@@ -123,12 +123,12 @@ public class Main {
         System.out.println("\n=== Urządzenia ===");
         for (int i = 0; i < Device.deviceList.size(); i++) {
             Device device = Device.deviceList.get(i);
-            System.out.println(String.format("%-20s | %.1f kWh | %.1f h | %s | Start: %s", 
-                             device.name, 
-                             device.powerUsage, 
+            System.out.printf("%-20s | %.1f kWh | %.1f h | %s | Start: %s%n",
+                             device.name,
+                             device.powerUsage,
                              device.workingTime,
                              device.isFlexible ? "Elastyczne" : "Nieelastyczne",
-                             device.getPreferredStartTime()));
+                             device.getPreferredStartTime());
         }
     }
     
@@ -154,10 +154,10 @@ public class Main {
         System.out.println("-----|-------------------|----------------");
         
         // Wyświetlenie statystyk pierwszej generacji
-        System.out.println(String.format("%4d | %16.2f | %14.2f", 
-                         currentGeneration.getGenerationNumber(), 
-                         currentGeneration.getBestFitness(), 
-                         currentGeneration.getAverageFitness()));
+        System.out.printf("%4d | %16.2f | %14.2f%n",
+                         currentGeneration.getGenerationNumber(),
+                         currentGeneration.getBestFitness(),
+                         currentGeneration.getAverageFitness());
         
         // Ewolucja przez 99 kolejnych pokoleń (razem 100)
         for (int i = 1; i < 100; i++) {
@@ -165,10 +165,10 @@ public class Main {
             
             // Wyświetlenie statystyk co 5 pokoleń lub dla ostatnich 10
             if (i % 5 == 0 || i >= 90) {
-                System.out.println(String.format("%4d | %16.2f | %14.2f", 
-                                 currentGeneration.getGenerationNumber(), 
-                                 currentGeneration.getBestFitness(), 
-                                 currentGeneration.getAverageFitness()));
+                System.out.printf("%4d | %16.2f | %14.2f%n",
+                                 currentGeneration.getGenerationNumber(),
+                                 currentGeneration.getBestFitness(),
+                                 currentGeneration.getAverageFitness());
             }
         }
         
@@ -183,26 +183,26 @@ public class Main {
             
             // Obliczenie całkowitego kosztu
             double totalCost = bestChromosome.getFitness() / 1.2; // usunięcie penalty
-            System.out.println(String.format("\nCałkowity koszt energii: %.2f zł", totalCost));
+            System.out.printf("\nCałkowity koszt energii: %.2f zł%n", totalCost);
             
             // Porównanie z naiwnym podejściem
             double naiveCost = calculateNaiveCost();
-            System.out.println(String.format("Koszt bez optymalizacji: %.2f zł", naiveCost));
-            System.out.println(String.format("Oszczędności: %.2f zł (%.1f%%)", 
-                             naiveCost - totalCost, 
-                             ((naiveCost - totalCost) / naiveCost) * 100));
+            System.out.printf("Koszt bez optymalizacji: %.2f zł%n", naiveCost);
+            System.out.printf("Oszczędności: %.2f zł (%.1f%%)%n",
+                             naiveCost - totalCost,
+                             ((naiveCost - totalCost) / naiveCost) * 100);
         }
         
         // Podsumowanie ewolucji
         System.out.println("\n=== Podsumowanie ewolucji ===");
         List<Generation> allGenerations = Generation.getGenerationList();
-        double firstGenBest = allGenerations.get(0).getBestFitness();
-        double lastGenBest = allGenerations.get(allGenerations.size() - 1).getBestFitness();
+        double firstGenBest = allGenerations.getFirst().getBestFitness();
+        double lastGenBest = allGenerations.getLast().getBestFitness();
         double improvement = ((firstGenBest - lastGenBest) / firstGenBest) * 100;
         
-        System.out.println(String.format("Pierwsza generacja - najlepsza fitness: %.2f", firstGenBest));
-        System.out.println(String.format("Ostatnia generacja - najlepsza fitness: %.2f", lastGenBest));
-        System.out.println(String.format("Poprawa: %.2f (%.1f%%)", firstGenBest - lastGenBest, improvement));
+        System.out.printf("Pierwsza generacja - najlepsza fitness: %.2f%n", firstGenBest);
+        System.out.printf("Ostatnia generacja - najlepsza fitness: %.2f%n", lastGenBest);
+        System.out.printf("Poprawa: %.2f (%.1f%%)%n", firstGenBest - lastGenBest, improvement);
     }
     
     /**

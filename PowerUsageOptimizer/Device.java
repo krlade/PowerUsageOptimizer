@@ -8,12 +8,11 @@ public class Device {
     String name;
     double powerUsage; // in kWh
     double workingTime; // in hours
-    boolean isFlexible; // true if the device can be used flexibly, false if it has fixed usage time
+    boolean isFlexible; // true if the device can be used flexibly
     char[] startTime;
     LocalTime preferredStartTime;
 
     static List<Device> deviceList = new ArrayList<>();
-    static int iter = 0;
 
     public Device() {}
     public Device(String name, double powerUsage, double workingHours, boolean isFlexible, LocalTime preferredStartTime) {
@@ -22,6 +21,7 @@ public class Device {
         this.workingTime = workingHours;
         this.isFlexible = isFlexible;
         this.preferredStartTime =preferredStartTime;
+        this.startTime = String.valueOf((preferredStartTime.getHour()*60)+preferredStartTime.getMinute()).toCharArray();
     }
 
     static void loadFromFile(String filePath) {
@@ -29,10 +29,6 @@ public class Device {
         // This method should read device data from a file and populate the devices list
         // For now, we will just print a message
         System.out.println("TODO!");
-    }
-
-    public double getWorkingTime() {
-        return workingTime;
     }
 
     public LocalTime getStartTime() {

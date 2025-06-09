@@ -9,13 +9,13 @@ import java.time.LocalTime;
 public class Chromosome {
 
     List<Device> chromosomeList = new ArrayList<>();
-
     static int dataSize = 11;
-    int length;
     public static int maxValue = 1440;
     public static int minValue = 0;
     public static double pm = 0.1;
-    private static Random random = new Random();
+
+    int length;
+    private static final Random random = new Random();
 
     public Chromosome() {
         length = Device.deviceList.size();
@@ -100,7 +100,7 @@ public class Chromosome {
      */
     public void mutate() {
         for (int i = 0; i < chromosomeList.size(); i++) {
-            if (random.nextDouble() < pm) {
+            if (random.nextDouble() < pm && chromosomeList.get(i).isFlexible) {
                 mutateGene(i);
             }
         }
@@ -130,10 +130,7 @@ public class Chromosome {
             if (hours >= 24) {
                 hours = hours % 24;
             }
-            if (minutes >= 60) {
-                minutes = minutes % 60;
-            }
-            
+
             LocalTime newStartTime = LocalTime.of(hours, minutes);
             device.setPreferredStartTime(newStartTime);
 
