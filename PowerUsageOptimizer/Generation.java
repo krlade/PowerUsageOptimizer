@@ -3,20 +3,18 @@ package PowerUsageOptimizer;
 import java.util.*;
 
 public class Generation {
-    
-    // Statyczne pola klasy
+
+    private final List<Chromosome> chromosomes;
+    private int populationSize = 60;
+    private int promotionSize = 20;
+    private int generationNumber = 100;
+
+    private static final Comparator<Chromosome> fitnessComparator =
+            Comparator.comparingDouble(Chromosome::getFitness);
+
+    private final Random random;
     private static final List<Generation> generationList = new ArrayList<>();
     private static int generationIterator = 0;
-    private static final Comparator<Chromosome> fitnessComparator = 
-        Comparator.comparingDouble(Chromosome::getFitness);
-    
-    // Pola instancji
-    private List<Chromosome> chromosomes;
-    private int populationSize = 20;
-    private int promotionSize = 5;
-    private int generationNumber = 100;
-    private Random random;
-    
     /**
      * Konstruktor dla pierwszej generacji - tworzy losową populację
      * @param populationSize rozmiar populacji
@@ -94,10 +92,9 @@ public class Generation {
                 int minutes = randomStartTime % 60;
                 
                 if (hours >= 24) hours = hours % 24;
-                if (minutes >= 60) minutes = minutes % 60;
-                
-                device.setPreferredStartTime(java.time.LocalTime.of(hours, minutes));
-                device.setStartTime(convertToBinary(randomStartTime));
+
+                device.setPreferredStartTime(device.preferredStartTime);
+                device.setStartTime(device.startTime);
             }
         }
     }
