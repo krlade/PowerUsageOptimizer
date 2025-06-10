@@ -161,8 +161,7 @@ public class Chromosome {
                     int hours = repairedTime / 60;
                     int minutes = repairedTime % 60;
                     if (hours >= 24) hours = hours % 24;
-                    if (minutes >= 60) minutes = minutes % 60;
-                    
+
                     device.setPreferredStartTime(LocalTime.of(hours, minutes));
                 }
                 
@@ -179,7 +178,7 @@ public class Chromosome {
     }
     
     /**
-     * Naprawia konflikty czasowe - zapewnia, że żadne dwa urządzenia nie pracują w tym samym czasie
+     * Naprawia konflikty czasowe-zapewnia, że żadne dwa urządzenia nie pracują w tym samym czasie
      */
     public void repairTimeConflicts() {
         List<TimeSlot> occupiedSlots = new ArrayList<>();
@@ -219,8 +218,7 @@ public class Chromosome {
                             int minutes = newStartMinutes % 60;
                             
                             if (hours >= 24) hours = hours % 24;
-                            if (minutes >= 60) minutes = minutes % 60;
-                            
+
                             LocalTime newStartTime = LocalTime.of(hours, minutes);
                             device.setPreferredStartTime(newStartTime);
                             device.setStartTime(convertToBinary(newStartMinutes));
@@ -335,7 +333,7 @@ public class Chromosome {
         int result = 0;
         for (int i = 0; i < binaryArray.length; i++) {
             if (binaryArray[i] == '1') {
-                result += Math.pow(2, binaryArray.length - 1 - i);
+                result += (int) Math.pow(2, binaryArray.length - 1 - i);
             }
         }
         return result;

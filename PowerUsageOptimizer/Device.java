@@ -2,6 +2,7 @@ package PowerUsageOptimizer;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Device {
@@ -38,31 +39,20 @@ public class Device {
         return binary.toCharArray();
     }
 
-
-    // For use by genetic algorithm (binary time decoding)
-    public LocalTime getStartTimeFromGene() {
-        if (startTime == null || startTime.length != 11) return null;
-        int minutes = Integer.parseInt(new String(startTime), 2);
-        int hour = minutes / 60;
-        int minute = minutes % 60;
-        return LocalTime.of(hour % 24, minute % 60); // Ensure valid time
-    }
-
     public void setStartTime(char[] startTime) {
-        if (startTime != null && startTime.length == 11) {
-            this.startTime = startTime;
-            this.preferredStartTime = getStartTimeFromGene();
-        } else {
-            System.out.println("Invalid start time: must be 11-bit binary or non-null.");
-            this.startTime = null;
-            this.preferredStartTime = null;
+        char[] newStartTime = new char[11];
+
+        for(int i=11-startTime.length; i>0; i--) {
+            Arrays.fill(newStartTime, '0');
+            System.arraycopy(startTime, 0, newStartTime, 11-startTime.length, startTime.length);
         }
+        this.startTime = newStartTime;
+
     }
 
     public double getPowerPrice() {
         double price = 0.0;
-        if (preferredStartTime == null) return 0.0;
-        for (int i = 0; i < (int)Math.ceil(workingTime); i++) {
+        for (int i = 0; i < workingTime; i++) {
             LocalTime hour = preferredStartTime.plusHours(i);
             price += Tariff.getPrice(hour) * powerUsage;
         }

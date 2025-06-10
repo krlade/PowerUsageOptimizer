@@ -48,7 +48,7 @@ public class GUI {
 
         addButtonActions();
 
-        promptForDeviceData();
+        //promptForDeviceData();
         updateDeviceCountLabel();
 
         frame.setVisible(true);
