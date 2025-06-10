@@ -106,8 +106,8 @@ public class GUI {
         }
 
         if (generations.size() >= 2) {
-            double firstBest = generations.get(0).getBestFitness();
-            double lastBest = generations.get(generations.size() - 1).getBestFitness();
+            double firstBest = generations.getFirst().getBestFitness();
+            double lastBest = generations.getLast().getBestFitness();
             double improvement = firstBest - lastBest;
             double improvementPercent = (improvement / firstBest) * 100;
 

@@ -22,7 +22,7 @@ public class Main {
         // Uruchomienie algorytmu genetycznego
         runGeneticAlgorithm();
 
-        javax.swing.SwingUtilities.invokeLater(() -> new GUI());
+        javax.swing.SwingUtilities.invokeLater(GUI::new);
     }
 
     /**
