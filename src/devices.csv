@@ -1,0 +1,9 @@
+name,powerUsage,workingTime,isFlexible,preferredStartTime
+Lodówka,3.0,3.0,false,0
+Pralka,2.4,1.0,true,480
+Zmywarka,2.5,1.0,true,720
+Czajnik,0.8,1.0,true,300
+Komputer,0.7,3.0,true,500
+Piekarnik,2.5,1.0,false,1000
+Suszarka,1.8,1,true,800
+Telewizor,0.5,2.0,true,1200

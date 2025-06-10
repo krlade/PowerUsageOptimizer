@@ -14,6 +14,8 @@ public class GUI {
     private JButton displayDevicesButton;
     private JButton showBestScheduleButton;
     private JButton exitButton;
+    private JButton showChartButton;
+    private List<Double> lastFitnessData;
 
     public GUI() {
         initialize();
@@ -30,14 +32,17 @@ public class GUI {
         runAlgorithmButton = new JButton("Uruchom Algorytm");
         displayDevicesButton = new JButton("Pokaż Urządzenia");
         showBestScheduleButton = new JButton("Pokaż Optymalny Harmonogram");
+        showChartButton = new JButton("Pokaż Wykres Ewolucji");
         exitButton = new JButton("Wyjdź");
         deviceCountLabel = new JLabel();
 
         buttonPanel.add(runAlgorithmButton);
         buttonPanel.add(displayDevicesButton);
         buttonPanel.add(showBestScheduleButton);
-        buttonPanel.add(exitButton);
         buttonPanel.add(deviceCountLabel);
+        buttonPanel.add(showChartButton);
+        buttonPanel.add(exitButton);
+
 
         outputArea = new JTextArea();
         outputArea.setEditable(false);
@@ -58,9 +63,36 @@ public class GUI {
         runAlgorithmButton.addActionListener(e -> runAlgorithm());
         displayDevicesButton.addActionListener(e -> displayDevices());
         showBestScheduleButton.addActionListener(e -> showBestSchedule());
+        showChartButton.addActionListener(e -> showEvolutionChart());
         exitButton.addActionListener(e -> System.exit(0));
     }
 
+    private void showEvolutionChart() {
+        if (lastFitnessData == null || lastFitnessData.isEmpty()) {
+            JOptionPane.showMessageDialog(frame,
+                    "Najpierw uruchom algorytm genetyczny, aby wygenerować dane do wykresu.",
+                    "Brak danych",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // Utworzenie nowego okna dla wykresu
+        JFrame chartFrame = new JFrame("Wykres Ewolucji - Najlepsze Rozwiązania");
+        chartFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        chartFrame.setSize(900, 700);
+        chartFrame.setLocationRelativeTo(frame);
+
+        // Dodanie panelu wykresu
+        ChartPanel chartPanel = new ChartPanel(
+                lastFitnessData,
+                "Ewolucja Najlepszego Rozwiązania",
+                "Numer Pokolenia",
+                "Wartość Fitness"
+        );
+
+        chartFrame.add(chartPanel);
+        chartFrame.setVisible(true);
+    }
 
 
     private void runAlgorithm() {
@@ -72,6 +104,7 @@ public class GUI {
         List<Generation> generations = new ArrayList<>();
         generations.add(currentGeneration);
 
+        List<Double> fitnessHistory = new ArrayList<>();
         appendToOutput("\n=== Ewolucja ===");
         appendToOutput("Gen. | Najlepsza fitness | Średnia fitness");
         appendToOutput("-----|-------------------|----------------");
@@ -80,30 +113,20 @@ public class GUI {
                 currentGeneration.getBestFitness(),
                 currentGeneration.getAverageFitness()));
 
-        for (int i = 1; i < 100; i++) {
+        fitnessHistory.add(currentGeneration.getBestFitness());
+        for (int i = 0; i < 100; i++) {
             currentGeneration = new Generation(currentGeneration, 50, 10);
+            fitnessHistory.add(currentGeneration.getBestFitness());
             generations.add(currentGeneration);
-            if (i % 5 == 0 || i >= 90) {
                 appendToOutput(String.format("%4d | %16.2f | %14.2f",
                         currentGeneration.getGenerationNumber(),
                         currentGeneration.getBestFitness(),
                         currentGeneration.getAverageFitness()));
-            }
         }
 
         appendToOutput("\n=== Wyniki końcowe ===");
 
         Chromosome bestChromosome = currentGeneration.getBestChromosome();
-        if (bestChromosome != null) {
-            appendToOutput("Najlepsza fitness: " + bestChromosome.getFitness());
-            double totalCost = bestChromosome.getFitness() / 1.2;
-            appendToOutput(String.format("\nCałkowity koszt energii: %.2f zł", totalCost));
-            double naiveCost = calculateNaiveCost();
-            appendToOutput(String.format("Koszt bez optymalizacji: %.2f zł", naiveCost));
-            appendToOutput(String.format("Oszczędności: %.2f zł (%.1f%%)",
-                    naiveCost - totalCost,
-                    ((naiveCost - totalCost) / naiveCost) * 100));
-        }
 
         if (generations.size() >= 2) {
             double firstBest = generations.getFirst().getBestFitness();
@@ -116,6 +139,7 @@ public class GUI {
             appendToOutput(String.format("Ostatnia generacja - najlepsza fitness: %.2f", lastBest));
             appendToOutput(String.format("Poprawa: %.2f (%.1f%%)", improvement, improvementPercent));
         }
+        this.lastFitnessData = fitnessHistory;
     }
 
     private void displayDevices() {

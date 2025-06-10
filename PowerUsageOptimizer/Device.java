@@ -1,9 +1,12 @@
 package PowerUsageOptimizer;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.io.FileReader;
 
 public class Device {
     public String name;
@@ -71,5 +74,30 @@ public class Device {
     public static void loadFromFile(String filePath) {
         // TODO: Implement file loading if needed
         System.out.println("Loading devices from file not implemented.");
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            boolean firstLine = true;
+
+            while ((line = br.readLine()) != null) {
+                // Pomijamy nagłówek
+                if (firstLine) {
+                    firstLine = false;
+                    continue;
+                }
+                String[] fields = line.split(",");
+
+                String name = fields[0].trim();
+                double power = Double.parseDouble(fields[1].trim());
+                double workingHours = Double.parseDouble(fields[2].trim()); // Domyślna wartość, można zmienić w przyszłości
+                boolean isElastic = Boolean.parseBoolean(fields[3].trim());
+                int minutes = Integer.parseInt(fields[4].trim());
+                LocalTime preferedStartTime = LocalTime.of(minutes/60, minutes % 60);
+
+                Device device = new Device(name, power, workingHours, isElastic, preferedStartTime);
+                Device.deviceList.add(device);
+            }
+        } catch (IOException e) {
+            System.err.println("Błąd podczas wczytywania pliku: " + e.getMessage());
+        }
     }
 }

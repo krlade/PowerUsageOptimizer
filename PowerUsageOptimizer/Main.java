@@ -1,6 +1,9 @@
 package PowerUsageOptimizer;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,19 +74,23 @@ public class Main {
         System.out.println("\n=== Inicjalizacja urządzeń ===");
 
         // Przykładowe urządzenia
-        Device washingMachine = new Device("Pralka", 2.0, 2.0, true, LocalTime.of(8, 0));
-        Device dishwasher = new Device("Zmywarka", 1.8, 1.5, true, LocalTime.of(20, 0));
-        Device electricHeater = new Device("Grzejnik elektryczny", 3.0, 4.0, true, LocalTime.of(6, 0));
-        Device waterHeater = new Device("Podgrzewacz wody", 2.5, 1.0, false, LocalTime.of(5, 0)); // nieelastyczny
-        Device airConditioner = new Device("Klimatyzacja", 2.2, 3.0, true, LocalTime.of(14, 0));
-        Device electricOven = new Device("Piekarnik elektryczny", 2.8, 1.0, true, LocalTime.of(18, 0));
+        //Device washingMachine = new Device("Pralka", 2.0, 2.0, true, LocalTime.of(8, 0));
+        //Device dishwasher = new Device("Zmywarka", 1.8, 1.5, true, LocalTime.of(20, 0));
+        //Device electricHeater = new Device("Grzejnik elektryczny", 3.0, 4.0, true, LocalTime.of(6, 0));
+        //Device waterHeater = new Device("Podgrzewacz wody", 2.5, 1.0, false, LocalTime.of(5, 0)); // nieelastyczny
+        //Device airConditioner = new Device("Klimatyzacja", 2.2, 3.0, true, LocalTime.of(14, 0));
+        //Device electricOven = new Device("Piekarnik elektryczny", 2.8, 1.0, true, LocalTime.of(18, 0));
+        //Device tv = new Device("Telewizor", 0.8, 3.0, true, LocalTime.of(20, 45));
 
-        Device.deviceList.add(washingMachine);
-        Device.deviceList.add(dishwasher);
-        Device.deviceList.add(electricHeater);
-        Device.deviceList.add(waterHeater);
-        Device.deviceList.add(airConditioner);
-        Device.deviceList.add(electricOven);
+        Device.loadFromFile("src/devices.csv");
+
+        //Device.deviceList.add(washingMachine);
+        //Device.deviceList.add(dishwasher);
+        //Device.deviceList.add(electricHeater);
+        //Device.deviceList.add(waterHeater);
+        //Device.deviceList.add(airConditioner);
+        //Device.deviceList.add(electricOven);
+        //Device.deviceList.add(tv);
 
         System.out.println("Utworzono " + Device.deviceList.size() + " urządzeń");
     }
@@ -165,13 +172,10 @@ public class Main {
         for (int i = 1; i < 100; i++) {
             currentGeneration = new Generation(currentGeneration, 50, 10);
 
-            // Wyświetlenie statystyk co 5 pokoleń lub dla ostatnich 10
-            if (i % 5 == 0 || i >= 90) {
-                System.out.printf("%4d | %16.2f | %14.2f%n",
-                                 currentGeneration.getGenerationNumber(),
-                                 currentGeneration.getBestFitness(),
-                                 currentGeneration.getAverageFitness());
-            }
+            System.out.printf("%4d | %16.2f | %14.2f%n",
+                    currentGeneration.getGenerationNumber(),
+                    currentGeneration.getBestFitness(),
+                    currentGeneration.getAverageFitness());
         }
 
         // Szczegółowe wyniki końcowe
@@ -180,20 +184,6 @@ public class Main {
 
         System.out.println("\n=== Najlepszy chromosom ===");
         Chromosome bestChromosome = currentGeneration.getBestChromosome();
-        if (bestChromosome != null) {
-            bestChromosome.printChromosome();
-
-            // Obliczenie całkowitego kosztu
-            double totalCost = bestChromosome.getFitness() / 1.2; // usunięcie penalty
-            System.out.printf("\nCałkowity koszt energii: %.2f zł%n", totalCost);
-
-            // Porównanie z naiwnym podejściem
-            double naiveCost = calculateNaiveCost();
-            System.out.printf("Koszt bez optymalizacji: %.2f zł%n", naiveCost);
-            System.out.printf("Oszczędności: %.2f zł (%.1f%%)%n",
-                             naiveCost - totalCost,
-                             ((naiveCost - totalCost) / naiveCost) * 100);
-        }
 
         // Podsumowanie ewolucji
         System.out.println("\n=== Podsumowanie ewolucji ===");
@@ -208,24 +198,101 @@ public class Main {
     }
 
     /**
-     * Oblicza koszt przy naiwnym podejściu (bez optymalizacji)
-     * @return koszt przy oryginalnych czasach urządzeń
+     * Eksportuje dane do pliku CSV
+     * @param filename nazwa pliku CSV
+     * @return true jeśli eksport się powiódł, false w przeciwnym razie
      */
-    private static double calculateNaiveCost() {
-        double totalCost = 0.0;
+    public static boolean exportToCSV(String filename) {
+        try (FileWriter writer = new FileWriter(filename)) {
+            // Nagłówek CSV
+            writer.append("Nr_Pokolenia,Najlepsza_Fitness,Koszt_Energii_PLN\n");
 
-        for (Device device : Device.deviceList) {
-            if (device.getPreferredStartTime() != null) {
-                for (int i = 0; i < device.workingTime; i++) {
-                    LocalTime hour = device.getPreferredStartTime().plusHours(i);
-                    double price = Tariff.getPrice(hour);
-                    if (price > 0) {
-                        totalCost += price * device.powerUsage;
-                    }
-                }
+            // Dane z każdego pokolenia
+            List<Generation> allGenerations = Generation.getGenerationList();
+            for (Generation generation : allGenerations) {
+                writer.append(String.valueOf(generation.getGenerationNumber())).append(",");
+                writer.append(String.format("%.4f", generation.getBestFitness())).append(",");
+
+                // Obliczenie kosztu energii (fitness / 1.2 - usunięcie penalty)
+                double energyCost = generation.getBestFitness() / 1.2;
+                writer.append(String.format("%.4f", energyCost)).append("\n");
             }
+
+            // Dodanie sekcji z informacjami o urządzeniach
+            writer.append("\n\n# Informacje o urzadzeniach\n");
+            writer.append("Nazwa,Zuzycie_kWh,Czas_Pracy_h,Elastyczne,Preferowany_Start\n");
+            
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+            for (Device device : Device.deviceList) {
+                writer.append(device.name).append(",");
+                writer.append(String.format("%.1f", device.powerUsage)).append(",");
+                writer.append(String.format("%.1f", device.workingTime)).append(",");
+                writer.append(device.isFlexible ? "TAK" : "NIE").append(",");
+                
+                if (device.getPreferredStartTime() != null) {
+                    writer.append(device.getPreferredStartTime().format(timeFormatter));
+                } else {
+                    writer.append("BRAK");
+                }
+                writer.append("\n");
+            }
+
+            // Dodanie sekcji z informacjami o taryfach
+            writer.append("\n\n# Informacje o taryfach\n");
+            writer.append("Nazwa,Cena_PLN_kWh,Poczatek,Koniec\n");
+            
+            for (Tariff tariff : Tariff.tarrifsList) {
+                writer.append(tariff.name).append(",");
+                writer.append(String.format("%.4f", tariff.price)).append(",");
+                writer.append(tariff.startTime.format(timeFormatter)).append(",");
+                writer.append(tariff.endTime.format(timeFormatter)).append("\n");
+            }
+
+            // Podsumowanie
+            if (!allGenerations.isEmpty()) {
+                writer.append("\n\n# Podsumowanie\n");
+                writer.append("Parametr,Wartosc\n");
+                writer.append("Liczba_pokolen,").append(String.valueOf(allGenerations.size())).append("\n");
+                writer.append("Pierwsza_fitness,").append(String.format("%.4f", allGenerations.getFirst().getBestFitness())).append("\n");
+                writer.append("Ostatnia_fitness,").append(String.format("%.4f", allGenerations.getLast().getBestFitness())).append("\n");
+                
+                double improvement = allGenerations.getFirst().getBestFitness() - allGenerations.getLast().getBestFitness();
+                double improvementPercent = (improvement / allGenerations.getFirst().getBestFitness()) * 100;
+                writer.append("Poprawa_bezwzgledna,").append(String.format("%.4f", improvement)).append("\n");
+                writer.append("Poprawa_procentowa,").append(String.format("%.2f", improvementPercent)).append("\n");
+                
+                double optimizedCost = allGenerations.getLast().getBestFitness() / 1.2;
+            }
+
+            System.out.println("Dane zostały wyeksportowane do pliku: " + filename);
+            return true;
+
+        } catch (IOException e) {
+            System.err.println("Błąd podczas eksportu do CSV: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Uruchamia algorytm genetyczny i zwraca listę najlepszych fitness z każdego pokolenia
+     * @return lista wartości fitness dla wykresu
+     */
+    public static List<Double> runGeneticAlgorithmForChart() {
+        List<Double> fitnessHistory = new ArrayList<>();
+        
+        // Resetowanie licznika generacji
+        Generation.resetGenerationCounter();
+
+        // Utworzenie pierwszej generacji
+        Generation currentGeneration = new Generation(50, 10);
+        fitnessHistory.add(currentGeneration.getBestFitness());
+
+        // Ewolucja przez 99 kolejnych pokoleń (razem 100)
+        for (int i = 1; i < 100; i++) {
+            currentGeneration = new Generation(currentGeneration, 50, 10);
+            fitnessHistory.add(currentGeneration.getBestFitness());
         }
 
-        return totalCost;
+        return fitnessHistory;
     }
 }
